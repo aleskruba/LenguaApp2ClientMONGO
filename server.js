@@ -27,6 +27,9 @@ app.use(cors(corsOptions));
 
 app.use(cookieParser());
 
+app.use(express.static('public'));
+
+
 app.use(
   session({
     secret: 'your-secret-key', 
@@ -75,10 +78,13 @@ app.post("/create-payment-intent", async (req, res) => {
 
 app.use(authRoutes); // Use the authRoutes middleware
 
+
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then((result) => {
     console.log('Connected to MongoDB');
     app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
   })
   .catch((err) => console.error('Error connecting to MongoDB:', err));
+
+
 

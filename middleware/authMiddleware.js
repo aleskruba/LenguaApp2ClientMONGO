@@ -29,8 +29,7 @@ const checkUser = async (req, res, next) => {
     try {
       const decodedToken = await jwt.verify(token, process.env.KEY);
       req.user = decodedToken; // Save the user data from the token in the request object
-      console.log('req:',req.user.id)
-
+  
       const user = await User.findOne({ _id: req.user.id });
 
       if (user) {
@@ -41,7 +40,6 @@ const checkUser = async (req, res, next) => {
         console.log('User not found in the database');
         // Optionally, you can set req.user to null or perform any other action here.
       }
-      console.log(user)
       next();
     } catch (err) {
       // Handle any error that occurs during verification
@@ -60,6 +58,8 @@ const checkUser = async (req, res, next) => {
 
 async function verifyUser(req, res, next){
 
+
+
   try {
       
       const { email } = req.method == "GET" ? req.query : req.body;
@@ -76,12 +76,21 @@ async function verifyUser(req, res, next){
 }
 
 
-async function generateOTP(req, res) {
-  req.app.locals.OTP = await otpGenerator.generate(6, { lowerCaseAlphabets: false, upperCaseAlphabets: false, specialChars: false});
+async function generateOTP(length) {
+  try {
+    const otp = await otpGenerator.generate(length, {
+      upperCaseAlphabets: false,
+      specialChars: false,
+    });
+    return otp;
+  } catch (error) {
+    console.error('Error generating OTP:', error);
+    throw error;
+  }
 }
 
 
-async function verifyUserResetPassword(req, res, next){
+/* async function verifyUserResetPassword(req, res, next){
 
   try {
       
@@ -99,6 +108,36 @@ async function verifyUserResetPassword(req, res, next){
 
   } catch (error) {
       return res.status(404).send({ error: "Authentication Error"});
+  }
+}
+ */
+
+async function verifyUserResetPassword(req, res, next) {
+  
+  try {
+    const { email } = req.method === 'GET' ? req.query : req.body;
+
+    console.log(email)
+
+    let exist = await User.findOne({ email });
+      if (!exist) return res.status(404).send({ error: "Can't find User!" });
+
+    // Generate OTP
+    const otp = await generateOTP(6);
+    
+    const forgottenPasswordToken = jwt.sign({ email, otp }, process.env.KEY, { expiresIn: '2m' });
+
+    res.cookie('jwtfp', forgottenPasswordToken, { httpOnly: true, 
+      maxAge: 120 * 1000, 
+      secure: true, 
+      sameSite: 'none' });
+
+    res.locals.forgottenPasswordToken = { otp };
+
+    res.status(201).json({ status: 'OK', forgottenPasswordToken });
+    next();
+  } catch (error) {
+    return res.status(404).send({ error: 'Authentication Error' });
   }
 }
 

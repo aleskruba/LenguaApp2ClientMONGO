@@ -121,13 +121,13 @@ const createToken = (id) => {
 
 
   
-  module.exports.fpassword_post = async (req, res) => {
+/*   module.exports.fpassword_post = async (req, res) => {
     try {
       const { email } = req.body;
   
       // Access the OTP from the session
       const otp = req.session.otp.value;
-      console.log("Stored OTP:", otp);
+     
   
       // Your other code to send the OTP via email goes here...
       let transporter = nodemailer.createTransport({
@@ -185,9 +185,88 @@ const createToken = (id) => {
     }
   };
   
+ */
 
 
 
+  module.exports.fpassword_post = async (req, res) => {
+    const { email } = req.body;
+  
+    try {
+      // Retrieve the forgottenPasswordToken from res.locals
+      const forgottenPasswordToken = res.locals.forgottenPasswordToken;
+  
+      let transporter = nodemailer.createTransport({
+        host: 'smtp.centrum.cz',
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.EMAILUSER,
+          pass: process.env.EMAILPASSWORD,
+        },
+      });
+  
+      // Extract the OTP from the forgottenPasswordToken
+      const otp = forgottenPasswordToken.otp;
+  
+      let mailOptions = {
+        from: process.env.EMAILUSER,
+        to: email,
+        subject: 'VÝVOJÁŘSKÝ TEST ZAPOMENUTÉHO HESLA',
+        text: `${email}, NOVÝ KÓD ${otp}`,
+        html: `<b>${otp}</b>`,
+      };
+  
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          res.status(500).json({ error: 'Email sending failed' });
+        } else {
+          res.status(200).json({ message: 'OTP sent successfully!' });
+        }
+      });
+  
+  
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+  
+  
+  module.exports.verifyOTP_post = async (req, res) => {
+    const { code } = req.body;
+    const forgottenPasswordToken = req.cookies.jwtfp;
+  
+    try {
+      if (!forgottenPasswordToken) {
+        // Handle the case where the cookie is missing
+        return res.status(401).json({ error: 'Token not found' });
+      }
+  
+      jwt.verify(forgottenPasswordToken, process.env.KEY, (err, decodedToken) => {
+        if (err) {
+          // Handle JWT verification errors
+          return res.status(401).json({ error: 'Invalid token' });
+        }
+  
+        // Access the OTP from the decodedToken payload
+        const otp = decodedToken.otp;
+  
+        if (otp === code) {
+   
+   
+          res.status(200).json({ message: 'OTP verified successfully!' });
+   
+        } else {
+          res.status(401).json({ error: 'Invalid OTP' });
+        }
+      });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+  
 
 module.exports.resetPassword_post = async (req, res) => {
   const { password, email } = req.body;
@@ -221,16 +300,15 @@ module.exports.resetPassword_post = async (req, res) => {
 module.exports.changePassword_post = async (req, res, next) => {
   const { oldPassword, newPassword } = req.body;
   const token = req.cookies.jwt;
-  console.log(oldPassword, newPassword);
+
 
   if (token) {
     jwt.verify(token, process.env.KEY, async (err, decodedToken) => {
       if (err) {
-        res.locals.user = null;
-        next();
+             next();
       } else {
         let user = await User.findById(decodedToken.id);
-        console.log(user);
+
         res.locals.user = user;
         try {
           const passwordMatch = await bcrypt.compare(oldPassword, user.password);
@@ -255,7 +333,6 @@ module.exports.changePassword_post = async (req, res, next) => {
       }
     });
   } else {
-    res.locals.user = null;
     next();
   }
 };
@@ -264,14 +341,12 @@ module.exports.changePassword_post = async (req, res, next) => {
 
 module.exports.updateprofile_put = async (req, res, next) => {
   const { updatedProfile } = req.body;
-  console.log(updatedProfile)
   const token = req.cookies.jwt;
 
   if (token) {
     jwt.verify(token, process.env.KEY, async (err, decodedToken) => {
       if (err) {
-        res.locals.user = null;
-        next();
+              next();
       } else {
         let user = await User.findById(decodedToken.id);
         res.locals.user = user;
@@ -296,7 +371,7 @@ module.exports.updateprofile_put = async (req, res, next) => {
       }
     });
   } else {
-    res.locals.user = null;
+
     next();
   }
 };
@@ -361,9 +436,6 @@ try {
 module.exports.updatelanguages_post = async (req, res, next) => {
   const { selectedLanguages } = req.body;
 
-  console.log(selectedLanguages)
-  
-  // Handle empty selectedLanguages
   if (selectedLanguages.length ) {
     try {
       const token = req.cookies.jwt;
@@ -423,9 +495,6 @@ module.exports.updatelanguages_post = async (req, res, next) => {
 module.exports.updateTeachinglanguages_post = async (req, res, next) => {
   const { selectedLanguages } = req.body;
 
-  console.log(selectedLanguages)
-  
-  // Handle empty selectedLanguages
   if (selectedLanguages.length ) {
     try {
       const token = req.cookies.jwt;
@@ -506,9 +575,8 @@ try {
 
 module.exports.teachertoggle_post = async (req, res, next) => {
   const { state } = req.body;   //false or true
-
   const token = req.cookies.jwt;
-  console.log(token);
+
 
   if (token) {
     try {
@@ -538,7 +606,15 @@ module.exports.teachertoggle_post = async (req, res, next) => {
 module.exports.findteachers_get = async (req, res) => {
     try {
         const teachers = await User.find({ teacherState: true });
-        const lessons = await Lesson.find({ isCompleted: true });
+        const fetchedlessons = await Lesson.find({ isCompleted: true });
+
+        let lessons =[]
+
+        fetchedlessons.forEach(element=> { 
+          if (element.ranking) {
+            lessons.push(element)
+          }
+        })
         
         // Create an object to hold both arrays
         const data = {

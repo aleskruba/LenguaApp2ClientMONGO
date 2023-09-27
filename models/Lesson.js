@@ -51,6 +51,14 @@ const lessonSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  isCancelled:{
+    type: Boolean,
+    default: false
+  },
+  isCancelledNotificationRead:{
+    type: Boolean,
+    default: false
+  },
   isCompletedConfirmedByStudent: String,
   billedPrice: Number,
   ranking: String,
