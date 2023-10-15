@@ -2,6 +2,7 @@ const { Router } = require('express');
 const authController = require('../controllers/authController');
 const lessonController = require('../controllers/lessonController');
 const bankController = require('../controllers/bankController');
+const chatController = require('../controllers/chatController');
 
 const axios = require("axios")
 const env = require("dotenv").config({ path: "./.env" });
@@ -48,6 +49,8 @@ router.get('/api/teacherZone',requireAuth,lessonController.myteacherzone_get)
 router.get('/api/teachersavedscheduleslot',requireAuth,lessonController.teachersavedscheduleslot_get)
 router.put('/api/teachersavescheduleslot',requireAuth,lessonController.teachersavescheduleslot_put)
 
+router.delete('/api/deletelessons',lessonController.deletelessons_put)
+
 //router.get('/api/availablescheduleslot',requireAuth,lessonController.availablescheduleslot_get)
 
 router.post('/api/savelessonslot',requireAuth,lessonController.saveLessonSlot_post) 
@@ -81,12 +84,30 @@ router.put('/api/buycredits',requireAuth,bankController.buycredits_put)
 router.put('/api/withdrawmoney',requireAuth,bankController.withdrawmoney_put)
 router.get('/api/gettransactions',requireAuth,bankController.gettransactions_get)
 
+
+// chat
+router.post('/api/chat',requireAuth,chatController.chat_post)
+router.get('/api/getchatteachers',requireAuth,chatController.getChatteachers_get)
+router.get('/api/getchatstudents',requireAuth,chatController.getChatStudents_get)
+router.put('/api/teachermessage',requireAuth,chatController.teachermessage_put)
+router.put('/api/studentmessage',requireAuth,chatController.studentmessage_put)
+
+
+router.put('/api/studentreadmessage',requireAuth,chatController.studentreadmessage_put)
+router.put('/api/teacherreadmessage',requireAuth,chatController.teacherreadmessage_put)
+
+
+
+
+
+
 router.get('/api/checkuser', checkUser, (req, res) => {
     if (req.user) {
         res.json({ user: req.user }); // This route should respond with the user data if the user is authenticated
     } 
  
 });
+
 
 router.get('/api/profile', requireAuth, (req, res) => {
     res.json({ user: req.user });

@@ -35,7 +35,10 @@ const userSchema = new mongoose.Schema({
     learnlang:{type: [String]},
     learnlanguages:{type: [{language:String}]  },
     teachlanguages:{type: [{language:String}]  },
-    teacherType:{type: String},
+    teacherType: {
+        type: String,
+        default: 'Tutor', // Set the default value to 'Tutor'
+    },
     admin: 
     { type: Boolean,
        default: false

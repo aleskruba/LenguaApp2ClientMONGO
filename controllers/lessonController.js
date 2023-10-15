@@ -126,7 +126,7 @@ try {
      
          for (let i of myTeachingLessons){
 
-            if (i.isCompleted) {
+            if (i.isCompleted || i.isReserved) {
         
             if(!myStudentsArray.some(obj => obj.idStudent === i.idStudent ) ){
               myStudentsArray.push(i)
@@ -273,11 +273,12 @@ module.exports.myteacherzone_get = async (req, res) => {
      
       for (let i of allLessons){
      
-         if(!myStudentsArray.some(obj => obj.idStudent === i.idStudent && !obj.isRejected) ){
+         if(!myStudentsArray.some(obj => obj.idStudent === i.idStudent && !(obj.isReserved && obj.isRejected)) ){
            myStudentsArray.push(i)
         }
       }
 
+    
 
 
       const today = new Date();
@@ -1033,5 +1034,26 @@ module.exports.problemlesson_put = async (req, res) => {
         }
       }
     });
+  }
+};
+
+
+
+module.exports.deletelessons_put = async (req, res) => {
+  try {
+    // Delete documents that meet the specified condition
+    const deleteResult = await Lesson.deleteMany({
+      isCancelled: true,
+
+    });
+
+    // 'deleteResult' will contain information about the deletion operation
+
+    res.status(200).json({
+      message: `Deleted ${deleteResult.deletedCount} documents`,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
