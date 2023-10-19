@@ -149,8 +149,10 @@ module.exports.teachermessage_put = async (req, res, next) => {
                     if (chatMessage) {
                         // Update chatThreads array with the new message
                         chatMessage.chatThreads.push({
+                            sender_ID:user._id,
                             sender: user.firstName,
                             message: message,
+                            teacher_id:user._id,
                             createdAt: new Date(),
                             isRead: false
                         });
@@ -199,8 +201,10 @@ module.exports.studentmessage_put = async (req, res, next) => {
                     if (chatMessage) {
                         // Update chatThreads array with the new message
                         chatMessage.chatThreads.push({
+                            sender_ID:user._id,
                             sender: user.firstName,
                             message: message,
+                            receiver_ID:teacher_id,
                             createdAt: new Date(),
                             isRead: false
                         });
@@ -208,7 +212,7 @@ module.exports.studentmessage_put = async (req, res, next) => {
                         // Save the updated chat message
                         await chatMessage.save();
                         res.status(200).json({ message: 'updated successfully'});
-                        console.log("Chat message updated to the database:", chatMessage);
+                        console.log("Chat message updated to the database:");
                     } else {
                         console.error("Chat message not found.");
                     }
@@ -225,10 +229,10 @@ module.exports.studentmessage_put = async (req, res, next) => {
 
 
 
-module.exports.studentreadmessage_put = async (req, res, next) => {
+module.exports.teacherreadmessageofstudent_put = async (req, res, next) => {
     const values = req.body;
     const student_id = values.student_id;
-    console.log('student', student_id);
+    console.log('student ID', student_id);
 
     const token = req.cookies.jwt;
     if (token) {
@@ -257,8 +261,9 @@ module.exports.studentreadmessage_put = async (req, res, next) => {
                     }
 
                     await chatMessage.save(); // Save the updated chatMessage
+                    res.status(200).json({ message: 'updated successfully'});
                 } catch (err) {
-                    console.log(err);
+                    console.log('error',err);
                 }
             }
         });
@@ -269,7 +274,7 @@ module.exports.studentreadmessage_put = async (req, res, next) => {
 
 
 
-module.exports.teacherreadmessage_put= async (req, res, next) => {
+module.exports.studentreadmessageofteacher_put= async (req, res, next) => {
     const values = req.body;
     const teacher_id = values.teacher_id;
     console.log(teacher_id)
@@ -282,6 +287,29 @@ module.exports.teacherreadmessage_put= async (req, res, next) => {
          } else {
              let user = await User.findById(decodedToken.id);
              res.locals.user = user;
+             try {
+                const chatMessage = await ChatMessage.findOne({
+                    receiver_id: teacher_id,
+                    sender_id: user._id
+                });
+
+                if (chatMessage.firstMessage && !chatMessage.firstMessage.isRead) {
+                    chatMessage.firstMessage.isRead = true;
+                }
+
+                if (chatMessage.chatThreads) {
+                    chatMessage.chatThreads.forEach(thread => {
+                        if (thread.isRead === false) {
+                            thread.isRead = true;
+                        }
+                    });
+                }
+
+                await chatMessage.save(); // Save the updated chatMessage
+                res.status(200).json({ message: 'updated successfully'});
+            } catch (err) {
+                console.log(err);
+            }
          }
      });
  } else {

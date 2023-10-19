@@ -55,10 +55,16 @@ const chatMessageSchema = new mongoose.Schema({
   },
 
   chatThreads: [    {
+    sender_ID: {
+      type: String
+    },
     sender: {
       type: String
     },
     message: {
+      type: String
+    },
+    receiver_ID: {
       type: String
     },
     createdAt: {

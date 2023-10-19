@@ -93,8 +93,8 @@ router.put('/api/teachermessage',requireAuth,chatController.teachermessage_put)
 router.put('/api/studentmessage',requireAuth,chatController.studentmessage_put)
 
 
-router.put('/api/studentreadmessage',requireAuth,chatController.studentreadmessage_put)
-router.put('/api/teacherreadmessage',requireAuth,chatController.teacherreadmessage_put)
+router.put('/api/teacherreadmessageofstudent',requireAuth,chatController.teacherreadmessageofstudent_put)
+router.put('/api/studentreadmessageofteacher',requireAuth,chatController.studentreadmessageofteacher_put)
 
 
 
