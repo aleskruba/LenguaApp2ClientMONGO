@@ -29,7 +29,10 @@ const createToken = (id) => {
     try {
       const decoded = jwt.verify(refreshToken, process.env.KEY);
       const accessToken = createToken(decoded.id);
-      res.cookie('jwt', accessToken, { httpOnly: true, maxAge: 5 * 24 * 60* 60 * 1000 });
+      res.cookie('jwt', accessToken, { httpOnly: true, 
+                                       maxAge: 5 * 24 * 60* 60 * 1000,
+                                      secure:true,
+                                      sameSite:'none'});
       res.status(200).json({ accessToken });
     } catch (err) {
       res.status(403).json({ message: 'Invalid refresh token' });
@@ -47,8 +50,14 @@ const createToken = (id) => {
       const user = await User.create({ idUser, email, password, profile, memberDate });
       const accessToken = createToken(user._id);
       const refreshToken = createRefreshToken(user._id);
-      res.cookie('jwt', accessToken, { httpOnly: true, maxAge: 5 * 24 * 60* 60 * 1000});
-      res.cookie('refreshToken', refreshToken, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 });
+      res.cookie('jwt', accessToken, { httpOnly: true,
+                                       maxAge: 5 * 24 * 60* 60 * 1000,
+                                       secure:true,
+                                      sameSite:'none'});
+      res.cookie('refreshToken', refreshToken, { httpOnly: true, 
+                                                 maxAge: 7 * 24 * 60 * 60 * 1000,
+                                                 secure:true,
+                                                sameSite:'none' });
       res.status(201).json({ user: user._id });
      }
     catch (err) {
@@ -79,15 +88,19 @@ const createToken = (id) => {
       res.cookie('jwt', accessToken, {
         httpOnly: true,
         maxAge: 5 * 24 * 60 * 60 * 1000,
-        domain: 'localhost',
-        path: '/',
+        //domain: 'localhost',
+        //path: '/',
+        secure:true,
+        sameSite:'none'
       });
   
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         maxAge: 7 * 24 * 60 * 60 * 1000,
-        domain: 'localhost',
-        path: '/',
+       // domain: 'localhost',
+       // path: '/',
+        secure:true,
+        sameSite:'none'
       });
   
       // Include the "user" information in the response
@@ -106,8 +119,16 @@ const createToken = (id) => {
 
     try {
 
-        res.clearCookie('jwt');
-        res.clearCookie('refreshToken');
+       // res.clearCookie('jwt');
+       // res.clearCookie('refreshToken');
+        res.cookie('jwt', '', { maxAge: 1, 
+          httpOnly: true, 
+          secure: true, 
+          sameSite: 'none' });
+          res.cookie('refreshToken', '', { maxAge: 1, 
+            httpOnly: true, 
+            secure: true, 
+            sameSite: 'none' });
         res.status(200).json({ message: 'Logout successful' });
     
     } catch (err) {
