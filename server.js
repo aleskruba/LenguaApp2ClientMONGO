@@ -19,7 +19,7 @@ app.use(express.static(process.env.STATIC_DIR));
 app.use(express.json());
 
 const corsOptions = {
-  origin: 'http://localhost:3000', 
+  origin: ['http://localhost:3000','https://lenguaapp2client.onrender.com'], 
   credentials: true, 
 };
 
