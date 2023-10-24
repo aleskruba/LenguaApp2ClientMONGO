@@ -49,6 +49,10 @@ app.get("/", (req, res) => {
   res.sendFile(path);
 }); 
 
+app.get("/api/test", (req, res) => {
+console.log('test')
+}); 
+
  app.get("/config", (req, res) => {
   res.send({
     publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
