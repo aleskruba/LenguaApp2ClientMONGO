@@ -81,6 +81,12 @@ app.post("/create-payment-intent", async (req, res) => {
   }
 }); 
 
+app.get("/completion", (req, res) => {
+  // You can redirect the user to the /completion route in your React app
+  res.redirect("/completion"); // This will route the user to the /completion route in your React app
+});
+
+
 app.use(authRoutes); // Use the authRoutes middleware
 
 
