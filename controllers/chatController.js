@@ -52,7 +52,7 @@ module.exports.chat_post = async (req, res, next) => {
                     // If you prefer to use save method:
                     // const chat = new Chat(chatData);
                     // await chat.save();
-
+                    res.status(200).json({ message: 'updated successfully'});
                     console.log("Chat message saved to the database:", chat);
                 } catch (err) {
                     console.error("Error saving chat message:", err);
@@ -152,7 +152,7 @@ module.exports.teachermessage_put = async (req, res, next) => {
                             sender_ID:user._id,
                             sender: user.firstName,
                             message: message,
-                            teacher_id:user._id,
+                            receiver_ID:student_id,
                             createdAt: new Date(),
                             isRead: false
                         });
@@ -252,9 +252,9 @@ module.exports.teacherreadmessageofstudent_put = async (req, res, next) => {
                         chatMessage.firstMessage.isRead = true;
                     }
 
-                    if (chatMessage.chatThreads) {
+                    if (chatMessage.chatThreads ) {
                         chatMessage.chatThreads.forEach(thread => {
-                            if (thread.isRead === false) {
+                            if (thread.isRead === false  ) {
                                 thread.isRead = true;
                             }
                         });
