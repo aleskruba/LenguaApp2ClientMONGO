@@ -83,7 +83,13 @@ app.post("/create-payment-intent", async (req, res) => {
 
 app.get("/api/completion", (req, res) => {
   // You can redirect the user to the /completion route in your React app
-  res.redirect("/completion"); // This will route the user to the /completion route in your React app
+  res.redirect("https://lenguaapp2client.onrender.com/completion"); // This will route the user to the /completion route in your React app
+});
+
+app.get("*", (req, res) => {
+  // For all other requests, send the React app's HTML file
+  const path = resolve(process.env.STATIC_DIR + "/index.html");
+  res.sendFile(path);
 });
 
 
