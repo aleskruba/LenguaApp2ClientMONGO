@@ -86,11 +86,13 @@ app.get("/api/completion", (req, res) => {
   res.redirect("https://lenguaapp2client.onrender.com/completion"); // This will route the user to the /completion route in your React app
 });
 
-app.get("*", (req, res) => {
+
+
+/* app.get("*", (req, res) => {
   // For all other requests, send the React app's HTML file
   const path = resolve(process.env.STATIC_DIR + "/index.html");
   res.sendFile(path);
-});
+}); */
 
 
 app.use(authRoutes); // Use the authRoutes middleware
