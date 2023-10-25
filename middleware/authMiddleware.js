@@ -22,6 +22,35 @@ const requireAuth = (req, res, next) => {
 };
 
 
+const requireADMINAuth = async (req, res, next) => {
+  const token = req.cookies.jwt;
+  if (token) {
+    jwt.verify(token, process.env.KEY, async (err, decodedToken) => {
+      if (err) {
+        console.log(err.message);
+        return res.status(401).json({ message: 'Unauthorized' });
+      } else {
+        // Token is valid, continue to the next middleware or route handler
+        req.user = decodedToken; // Save the user data from the token in the request object
+
+        try {
+          const user = await User.findOne({ _id: req.user.id });
+          if (user && user.admin) {
+            next(); // User is an admin, proceed to the next middleware or route
+          } else {
+            return res.status(403).json({ message: 'Forbidden' });
+          }
+        } catch (error) {
+          console.error(error);
+          return res.status(500).json({ message: 'Internal Server Error' });
+        }
+      }
+    });
+  } else {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+};
+
 // checkUser middleware
 const checkUser = async (req, res, next) => {
   const token = req.cookies.jwt;
@@ -142,4 +171,4 @@ async function verifyUserResetPassword(req, res, next) {
 }
 
 
-  module.exports = { requireAuth,checkUser,verifyUser,verifyUserResetPassword};
+  module.exports = { requireAuth,checkUser,verifyUser,verifyUserResetPassword,requireADMINAuth};

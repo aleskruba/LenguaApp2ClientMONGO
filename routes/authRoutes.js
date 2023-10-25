@@ -8,7 +8,7 @@ const axios = require("axios")
 const env = require("dotenv").config({ path: "./.env" });
 const { google } = require("googleapis");
 
-const { requireAuth,checkUser,verifyUserResetPassword,ban} = require('../middleware/authMiddleware');
+const { requireAuth,checkUser,verifyUserResetPassword,requireADMINAuth} = require('../middleware/authMiddleware');
 
 
 const router = Router();
@@ -96,6 +96,10 @@ router.put('/api/studentmessage',requireAuth,chatController.studentmessage_put)
 router.put('/api/teacherreadmessageofstudent',requireAuth,chatController.teacherreadmessageofstudent_put)
 router.put('/api/studentreadmessageofteacher',requireAuth,chatController.studentreadmessageofteacher_put)
 
+// admin
+router.get('/api/getusers',requireADMINAuth,authController.getusers)
+router.get('/api/getuser',requireADMINAuth,authController.getuser)
+router.put('/api/adminchangepassword',requireADMINAuth,authController.adminchangepassword)
 
 
 
@@ -181,5 +185,9 @@ router.get('/api/search', async (req, res, next) => {
     }
 
   }); 
+  
+
+
+  
 
   module.exports = router;

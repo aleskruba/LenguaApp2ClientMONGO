@@ -6,6 +6,7 @@ const otpGenerator = require('otp-generator')
 var moment = require('moment');
 const path = require('path');
 const nodemailer = require('nodemailer');
+const mongoose = require('mongoose');
 moment().format(); 
 
 const createToken = (id) => {
@@ -687,5 +688,97 @@ module.exports.loadhomedata = async (req, res) => {
   } catch (err) {
       console.log(err);
       res.status(500).json({ error: 'An error occurred while fetching data.' });
+  }
+};
+
+
+module.exports.getusers = async (req, res) => {
+  const token = req.cookies.jwt;
+
+  if (token) {
+    jwt.verify(token, process.env.KEY, async (err) => {
+      if (err) {
+        next(); 
+      } else {
+        let users = await User.find({});
+      try {
+          res.status(201).json({ users: users });
+        } catch (err) {
+          res.status(400).send(err.message); 
+        }
+      }
+    });
+  } else {
+    res.status(401).json({ error: 'Unauthorized' });
+    next(); 
+  }
+}
+
+
+module.exports.getuser = async (req, res,next) => {
+  const token = req.cookies.jwt;
+  const id = req.query.id; // Access the "id" query parameter
+
+  if (token) {
+    jwt.verify(token, process.env.KEY, async (err) => {
+      if (err) {
+        next(); 
+      } else {
+          try {
+          const user = await User.findById(new mongoose.Types.ObjectId(id));
+
+          res.status(201).json({ user: user });
+        } catch (err) {
+          console.log(err)
+        }
+      }
+    });
+  } else {
+    res.status(401).json({ error: 'Unauthorized' });
+    next(); 
+  }
+}
+
+
+
+module.exports.adminchangepassword = async (req, res, next) => {
+  const { newPassword, id } = req.body;
+  const token = req.cookies.jwt;
+
+  console.log(newPassword);
+  console.log(id); // Make sure id is a string
+
+  if (token) {
+    jwt.verify(token, process.env.KEY, async (err, decodedToken) => {
+      if (err) {
+        next();
+      } else {
+        try {
+          // Find the user by ID
+          const user = await User.findById(id);
+
+          if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+          }
+
+          if (newPassword.length < 6) {
+            return res.status(400).json({ error: 'New password is too short' });
+          }
+
+          // Hash the new password
+          const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+
+          // Update the user's password
+          await User.updateOne({ _id: id }, { password: hashedPassword });
+          
+          res.status(201).json({ message: 'Password changed' });
+        } catch (err) {
+          res.status(500).json({ error: err.message });
+        }
+      }
+    });
+  } else {
+    next();
   }
 };
