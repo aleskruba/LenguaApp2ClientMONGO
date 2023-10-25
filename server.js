@@ -19,8 +19,8 @@ app.use(express.static(process.env.STATIC_DIR));
 app.use(express.json());
 
 const corsOptions = {
-  origin: ['http://localhost:3000','https://lenguaapp2client.onrender.com'], 
-
+  origin: ['http://localhost:3000','https://lenguaapp2client.onrender.com','https://lenguaapp2client.onrender.com/test'], 
+  
   credentials: true, 
 };
 
@@ -81,12 +81,12 @@ app.post("/create-payment-intent", async (req, res) => {
   }
 }); 
 
-app.get("/api/completion", (req, res) => {
+/* app.get("/api/completion", (req, res) => {
   // You can redirect the user to the /completion route in your React app
   res.redirect("https://lenguaapp2client.onrender.com/completion"); // This will route the user to the /completion route in your React app
 });
 
-
+ */
 
 /* app.get("*", (req, res) => {
   // For all other requests, send the React app's HTML file
